@@ -1,10 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Countdown Timer</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Countdown Timer</title>
+  <style>
+    body {
+      font-family: Comic Sans, cursive;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background: #2A7B9B;
+      background: linear-gradient(332deg,rgba(42, 123, 155, 1) 0%, rgba(87, 199, 133, 1) 50%, rgba(237, 221, 83, 1) 100%);
+    }
+
+    .timer-container {
+      text-align: center;
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 320px;
+    }
+
+    #display {
+      font-size: 3rem;
+      margin: 1rem 0;
+    }
+
+    input {
+      width: 80px;
+      padding: 0.5rem;
+      font-size: 1rem;
+      text-align: center;
+      margin-bottom: 1rem;
+      font-family: Comic Sans, cursive;
+    }
+
+    button {
+      padding: 0.6rem 1rem;
+      margin: 0.25rem;
+      font-size: 1rem;
+      cursor: pointer;
+      font-family: Comic Sans, cursive;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+  </style>
 </head>
 <body>
+  <div class="timer-container">
+    <h1>Countdown Timer</h1>
+
+    <label for="secondsInput">Seconds:</label><br />
+    <input type="number" id="secondsInput" min="1" value="60" /><br />
+
+    <div id="display">60</div>
+
+    <button id="startBtn">Start</button>
+    <button id="stopBtn">Stop</button>
+    <button id="resetBtn">Reset</button>
+  </div>
 </body>
 </html>
