@@ -62,5 +62,44 @@
     <button id="stopBtn">Stop</button>
     <button id="resetBtn">Reset</button>
   </div>
+  <script>
+    let intervalId = null;
+    let remainingSeconds = parseInt(document.getElementById('secondsInput').value);
+
+    function updateDisplay() {
+      const m = Math.floor(remainingSeconds / 60);
+      const s = remainingSeconds % 60;
+      document.getElementById('display').textContent =
+        m > 0 ? `${m}:${String(s).padStart(2, '0')}` : remainingSeconds;
+    }
+
+    document.getElementById('startBtn').addEventListener('click', () => {
+      if (intervalId !== null) return;
+      if (remainingSeconds <= 0) {
+        remainingSeconds = parseInt(document.getElementById('secondsInput').value);
+        updateDisplay();
+      }
+      intervalId = setInterval(() => {
+        remainingSeconds--;
+        updateDisplay();
+        if (remainingSeconds <= 0) {
+          clearInterval(intervalId);
+          intervalId = null;
+        }
+      }, 1000);
+    });
+
+    document.getElementById('stopBtn').addEventListener('click', () => {
+      clearInterval(intervalId);
+      intervalId = null;
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      clearInterval(intervalId);
+      intervalId = null;
+      remainingSeconds = parseInt(document.getElementById('secondsInput').value);
+      updateDisplay();
+    });
+  </script>
 </body>
 </html>
