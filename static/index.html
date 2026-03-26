@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Countdown Timer</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Countdown Timer</title>
@@ -67,7 +64,62 @@
     <button id="startBtn">Start</button>
     <button id="stopBtn">Stop</button>
     <button id="resetBtn">Reset</button>
+    <audio id="alarmSound" src="/static/alarm.mp3"></audio>
   </div>
+  <script>
+    let timeLeft = 60;
+    let timer = null;
+
+    const display = document.getElementById("display");
+    const secondsInput = document.getElementById("secondsInput");
+    const startBtn = document.getElementById("startBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const alarmSound = document.getElementById("alarmSound");
+
+    function updateDisplay() {
+      display.textContent = timeLeft;
+    }
+
+    function startTimer() {
+      if (timer !== null) return;
+
+      if (timeLeft <= 0) {
+        timeLeft = parseInt(secondsInput.value) || 60;
+      }
+
+      timer = setInterval(() => {
+        timeLeft--;
+        updateDisplay();
+
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          timer = null;
+          display.textContent = "Done!";
+          alarmSound.play();
+        }
+      }, 1000);
+    }
+
+    function stopTimer() {
+      clearInterval(timer);
+      timer = null;
+      alarmSound.pause();
+      alarmSound.currentTime = 0;
+    }
+
+    function resetTimer() {
+      stopTimer();
+      timeLeft = parseInt(secondsInput.value) || 60;
+      updateDisplay();
+    }
+
+    startBtn.addEventListener("click", startTimer);
+    stopBtn.addEventListener("click", stopTimer);
+    resetBtn.addEventListener("click", resetTimer);
+    secondsInput.addEventListener("change", resetTimer);
+
+    updateDisplay();
+  </script>
 </body>
 </html>
-
