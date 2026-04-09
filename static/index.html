@@ -13,18 +13,18 @@
       min-height: 100vh;
       margin: 0;
       background: #2A7B9B;
-      background: linear-gradient(332deg,rgba(42, 123, 155, 1) 0%, rgba(87, 199, 133, 1) 50%, rgba(237, 221, 83, 1) 100%);
+      background: linear-gradient(332deg, rgba(42, 123, 155, 1) 0%, rgba(87, 199, 133, 1) 50%, rgba(237, 221, 83, 1) 100%);
       color: white;
-  	  text-shadow: 1px 1px 2px black, 0 0 25px blue, 0 0 5px green;
+      text-shadow: 1px 1px 2px black, 0 0 25px blue, 0 0 5px green;
     }
 
     .timer-container {
       text-align: center;
       background: #2A7B9B;
-      background: linear-gradient(134deg,rgba(42, 123, 155, 1) 0%, rgba(87, 199, 133, 1) 50%, rgba(237, 221, 83, 1) 100%);
+      background: linear-gradient(134deg, rgba(42, 123, 155, 1) 0%, rgba(87, 199, 133, 1) 50%, rgba(237, 221, 83, 1) 100%);
       padding: 2rem;
       border-radius: 12px;
-      box-shadow: 0 8px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
       width: 320px;
     }
 
@@ -33,7 +33,8 @@
       margin: 1rem 0;
     }
 
-    input {
+    input,
+    select {
       width: 80px;
       padding: 0.5rem;
       font-size: 1rem;
@@ -42,13 +43,17 @@
       font-family: Comic Sans, cursive;
     }
 
+    select {
+      width: 200px;
+    }
+
     button {
       padding: 0.6rem 1rem;
       margin: 0.25rem;
       font-size: 1rem;
       cursor: pointer;
       font-family: Comic Sans, cursive;
-      box-shadow: 0 8px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
     }
   </style>
 </head>
@@ -56,37 +61,118 @@
   <div class="timer-container">
     <h1>Countdown Timer</h1>
 
-    <label for="secondsInput">Seconds:</label><br />
-    <input type="number" id="secondsInput" min="1" value="60" /><br />
+    <label for="hoursInput">Hours:</label><br />
+    <input type="number" id="hoursInput" min="0" value="0" /><br />
 
-    <div id="display">60</div>
+    <label for="minutesInput">Minutes:</label><br />
+    <input type="number" id="minutesInput" min="0" value="1" /><br />
+
+    <label for="secondsInput">Seconds:</label><br />
+    <input type="number" id="secondsInput" min="0" value="0" /><br />
+
+    <label for="savedTimes">Previously Used Times:</label><br />
+    <select id="savedTimes">
+      <option value="">Select a previous time</option>
+    </select><br />
+
+    <div id="display">00:01:00</div>
 
     <button id="startBtn">Start</button>
     <button id="stopBtn">Stop</button>
     <button id="resetBtn">Reset</button>
+
     <audio id="alarmSound" src="/static/alarm.mp3"></audio>
   </div>
+
   <script>
-    let timeLeft = 60;
     let timer = null;
+    const STORAGE_KEY = "previousTimerTimes";
+    const MAX_SAVED = 5;
 
     const display = document.getElementById("display");
+    const hoursInput = document.getElementById("hoursInput");
+    const minutesInput = document.getElementById("minutesInput");
     const secondsInput = document.getElementById("secondsInput");
+    const savedTimes = document.getElementById("savedTimes");
     const startBtn = document.getElementById("startBtn");
     const stopBtn = document.getElementById("stopBtn");
     const resetBtn = document.getElementById("resetBtn");
     const alarmSound = document.getElementById("alarmSound");
 
+    function getTotalSeconds() {
+      const hours = parseInt(hoursInput.value) || 0;
+      const minutes = parseInt(minutesInput.value) || 0;
+      const seconds = parseInt(secondsInput.value) || 0;
+      return (hours * 3600) + (minutes * 60) + seconds;
+    }
+
+    function formatTime(totalSeconds) {
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    }
+
+    function setInputsFromSeconds(totalSeconds) {
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      hoursInput.value = hours;
+      minutesInput.value = minutes;
+      secondsInput.value = seconds;
+    }
+
+    function getSavedTimes() {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    }
+
+    function saveTime(totalSeconds) {
+      if (totalSeconds <= 0) return;
+
+      let times = getSavedTimes();
+
+      times = times.filter(time => time !== totalSeconds);
+      times.unshift(totalSeconds);
+
+      if (times.length > MAX_SAVED) {
+        times = times.slice(0, MAX_SAVED);
+      }
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(times));
+      loadSavedTimes();
+    }
+
+    function loadSavedTimes() {
+      const times = getSavedTimes();
+
+      savedTimes.innerHTML = '<option value="">Select a previous time</option>';
+
+      times.forEach(time => {
+        const option = document.createElement("option");
+        option.value = time;
+        option.textContent = formatTime(time);
+        savedTimes.appendChild(option);
+      });
+    }
+
+    let timeLeft = getTotalSeconds();
+
     function updateDisplay() {
-      display.textContent = timeLeft;
+      display.textContent = formatTime(timeLeft);
     }
 
     function startTimer() {
       if (timer !== null) return;
 
       if (timeLeft <= 0) {
-        timeLeft = parseInt(secondsInput.value) || 60;
+        timeLeft = getTotalSeconds();
       }
+
+      if (timeLeft <= 0) return;
+
+      saveTime(timeLeft);
 
       timer = setInterval(() => {
         timeLeft--;
@@ -110,15 +196,29 @@
 
     function resetTimer() {
       stopTimer();
-      timeLeft = parseInt(secondsInput.value) || 60;
+      timeLeft = getTotalSeconds();
       updateDisplay();
     }
+
+    savedTimes.addEventListener("change", () => {
+      const selected = parseInt(savedTimes.value);
+      if (!isNaN(selected)) {
+        stopTimer();
+        setInputsFromSeconds(selected);
+        timeLeft = selected;
+        updateDisplay();
+      }
+    });
 
     startBtn.addEventListener("click", startTimer);
     stopBtn.addEventListener("click", stopTimer);
     resetBtn.addEventListener("click", resetTimer);
+
+    hoursInput.addEventListener("change", resetTimer);
+    minutesInput.addEventListener("change", resetTimer);
     secondsInput.addEventListener("change", resetTimer);
 
+    loadSavedTimes();
     updateDisplay();
   </script>
 </body>
